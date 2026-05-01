@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}User Profile - Digital Certificates{% endblock %}
+
+{% block content %}
+<div class="stack-lg fade-in" style="max-width: 760px; margin: 0 auto;">
+    <div class="card">
+        <div class="card-header">
+            <h1 style="margin:0;">👤 Profile</h1>
+            <span class="badge badge-info">{{ session.role|capitalize }}</span>
+        </div>
+        <p class="muted mb-0">Your account details and security settings.</p>
+    </div>
+
+    <div class="panel">
+        <div class="grid grid-2">
+            <div class="card">
+                <p class="stat-label">Username</p>
+                <div class="stat-value" style="font-size: 1.6rem;">{{ user.username }}</div>
+            </div>
+            <div class="card">
+                <p class="stat-label">Email</p>
+                <div class="stat-value" style="font-size: 1.25rem;">{{ user.email }}</div>
+            </div>
+        </div>
+
+        <div class="grid grid-2 mt-2">
+            <div class="card">
+                <p class="stat-label">Member since</p>
+                <div class="stat-value" style="font-size: 1.25rem;">{{ user.created_at.strftime('%B %d, %Y') }}</div>
+            </div>
+            <div class="card">
+                <p class="stat-label">Last login</p>
+                <div class="stat-value" style="font-size: 1.25rem;">
+                    {% if user.last_login %}
+                        {{ user.last_login.strftime('%B %d, %Y at %H:%M') }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="card-header" style="border-bottom:none;">
+            <h2 style="margin:0;">Change password</h2>
+            <span class="muted">Minimum 6 characters</span>
+        </div>
+
+        <form class="form" method="POST" action="{{ url_for('auth.change_password') }}">
+            <div class="field">
+                <label class="label" for="old_password">Current password</label>
+                <input type="password" id="old_password" name="old_password" required placeholder="Current password">
+            </div>
+
+            <div class="field">
+                <label class="label" for="new_password">New password</label>
+                <input type="password" id="new_password" name="new_password" required minlength="6" placeholder="New password">
+            </div>
+
+            <div class="field">
+                <label class="label" for="confirm_password">Confirm new password</label>
+                <input type="password" id="confirm_password" name="confirm_password" required minlength="6" placeholder="Repeat new password">
+            </div>
+
+            <div class="actions" style="justify-content: flex-start;">
+                <button type="submit" class="btn btn-primary">Update password</button>
+                <a class="btn btn-ghost" href="{{ url_for('auth.logout') }}">Logout</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

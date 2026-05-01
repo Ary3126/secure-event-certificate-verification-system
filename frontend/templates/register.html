@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Digital Certificates{% endblock %}
+
+{% block content %}
+<div class="fade-in" style="max-width: 520px; margin: 0 auto;">
+    <div class="panel">
+        <div class="card-header" style="border-bottom: none;">
+            <h2 style="margin:0;">Create account</h2>
+            <span class="badge badge-info">Admin / Student</span>
+        </div>
+
+        <form class="form" method="POST">
+            <div class="field">
+                <label class="label" for="role">Sign up as</label>
+                <select id="role" name="role" required>
+                    <option value="" selected disabled>-- Choose role --</option>
+                    <option value="student">Student</option>
+                    <option value="admin">Admin (Charusat email required)</option>
+                </select>
+                <p class="muted" style="margin:0;">Admin email must be like <strong>&lt;id&gt;@charusat.edu.in</strong>.</p>
+            </div>
+
+            <div class="field">
+                <label class="label" for="username">Username</label>
+                <input type="text" id="username" name="username" required minlength="3" placeholder="Choose a username">
+            </div>
+
+            <div class="field">
+                <label class="label" for="email">Email</label>
+                <input type="email" id="email" name="email" required placeholder="you@example.com">
+            </div>
+
+            <div class="field">
+                <label class="label" for="password">Password</label>
+                <input type="password" id="password" name="password" required minlength="6" placeholder="At least 6 characters">
+            </div>
+
+            <div class="field">
+                <label class="label" for="confirm_password">Confirm password</label>
+                <input type="password" id="confirm_password" name="confirm_password" required minlength="6" placeholder="Repeat your password">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">Register</button>
+        </form>
+
+        <p class="text-center mt-3 mb-0">
+            Already have an account? <a href="{{ url_for('auth.login') }}">Login</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

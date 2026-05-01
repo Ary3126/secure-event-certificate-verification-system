@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}{{ role|capitalize }} Login - Digital Certificates{% endblock %}
+
+{% block content %}
+<div class="fade-in" style="max-width: 480px; margin: 0 auto;">
+    <div class="panel">
+        <div class="card-header" style="border-bottom: none;">
+            <h2 style="margin:0;">{{ role|capitalize }} Login</h2>
+            <span class="badge badge-info">Secure</span>
+        </div>
+
+        <form class="form" method="POST">
+            <div class="field">
+                <label class="label" for="username">Username</label>
+                <input type="text" id="username" name="username" required placeholder="Your username">
+            </div>
+
+            <div class="field">
+                <label class="label" for="password">Password</label>
+                <input type="password" id="password" name="password" required placeholder="Your password">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">Login</button>
+        </form>
+
+        <p class="text-center mt-3 mb-0">
+            <a href="{{ url_for('auth.login') }}">Back to role selection</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

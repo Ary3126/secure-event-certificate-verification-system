@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Certificate Details - Digital Certificates{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 2rem auto;">
+    <div style="background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-left: 4px solid var(--success-color);">
+        <h1 style="color: var(--success-color); margin-bottom: 2rem;">✓ Certificate Verified</h1>
+        
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+            <div>
+                <h3 style="color: var(--primary-color); margin-bottom: 1rem;">Certificate Details</h3>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <p style="color: #666; font-size: 0.9rem; margin-bottom: 0.3rem;">Recipient Name<p>
+                    <p style="font-size: 1.3rem; color: var(--primary-color); font-weight: bold;">{{ certificate.recipient_name }}</p>
+                </div>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <p style="color: #666; font-size: 0.9rem; margin-bottom: 0.3rem;">Course</p>
+                    <p style="font-size: 1.1rem; color: #333;">{{ certificate.course_name }}</p>
+                </div>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <p style="color: #666; font-size: 0.9rem; margin-bottom: 0.3rem;">Date Issued</p>
+                    <p style="font-size: 1.1rem; color: #333;">{{ certificate.issue_date.strftime('%B %d, %Y') }}</p>
+                </div>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <p style="color: #666; font-size: 0.9rem; margin-bottom: 0.3rem;">Certificate ID</p>
+                    <p style="font-family: monospace; font-size: 0.95rem; color: #333; word-break: break-all;">{{ certificate.certificate_uid }}</p>
+                </div>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <p style="color: #666; font-size: 0.9rem; margin-bottom: 0.3rem;">Verifications</p>
+                    <p style="font-size: 1.1rem; color: #333;">{{ certificate.verification_count }} time(s)</p>
+                </div>
+            </div>
+            
+            {% if certificate.qr_code_path %}
+            <div style="text-align: center;">
+                <p style="color: #666; font-size: 0.9rem; margin-bottom: 1rem;">QR Code</p>
+                <img src="{{ certificate.qr_code_path }}" alt="QR Code" style="max-width: 200px; border: 1px solid #ddd; border-radius: 5px;">
+            </div>
+            {% endif %}
+        </div>
+        
+        <div style="margin-top: 2rem; padding: 1.5rem; background: #f0fff4; border-radius: 5px; border-left: 4px solid var(--success-color);">
+            <p style="color: var(--success-color); font-weight: bold;">✓ This certificate is authentic and verified in our system.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

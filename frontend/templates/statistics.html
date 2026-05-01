@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Statistics - Digital Certificates{% endblock %}
+
+{% block content %}
+<div class="stack-lg fade-in">
+    <div class="card">
+        <div class="card-header">
+            <h1 style="margin:0;">📊 Statistics</h1>
+            <span class="badge badge-info">Analytics</span>
+        </div>
+        <p class="muted mb-0">A quick overview of templates, certificates, and verification activity.</p>
+    </div>
+
+    <div class="grid grid-3">
+        <div class="card stat-card">
+            <p class="stat-label">Total templates</p>
+            <div class="stat-value">{{ total_templates }}</div>
+        </div>
+        <div class="card stat-card">
+            <p class="stat-label">Certificates generated</p>
+            <div class="stat-value">{{ total_certificates }}</div>
+        </div>
+        <div class="card stat-card">
+            <p class="stat-label">Total verifications</p>
+            <div class="stat-value">{{ total_verifications }}</div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="card-header" style="border-bottom:none;">
+            <h2 style="margin:0;">Key metrics</h2>
+            <span class="muted">Calculated live</span>
+        </div>
+
+        <div class="grid grid-2">
+            <div class="card">
+                <p class="stat-label">Average verifications per certificate</p>
+                <div class="stat-value">
+                    {% if total_certificates > 0 %}
+                        {{ (total_verifications / total_certificates)|round(2) }}
+                    {% else %}
+                        0
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <p class="stat-label">Certificates per template</p>
+                <div class="stat-value">
+                    {% if total_templates > 0 %}
+                        {{ (total_certificates / total_templates)|round(2) }}
+                    {% else %}
+                        0
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

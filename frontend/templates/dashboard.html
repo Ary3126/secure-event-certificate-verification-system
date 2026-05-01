@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Digital Certificates{% endblock %}
+
+{% block content %}
+<div class="stack-lg fade-in">
+    <div class="card">
+        <div class="card-header">
+            <h1 style="margin:0;">Welcome, {{ user.username }}!</h1>
+            <span class="badge badge-info">Admin dashboard</span>
+        </div>
+
+        <div class="grid grid-3">
+            <div class="card stat-card">
+                <p class="stat-label">Total templates</p>
+                <div class="stat-value">{{ templates_count }}</div>
+            </div>
+            <div class="card stat-card">
+                <p class="stat-label">Total certificates</p>
+                <div class="stat-value">{{ certificates_count }}</div>
+            </div>
+            <div class="card stat-card">
+                <p class="stat-label">Total verifications</p>
+                <div class="stat-value">{{ total_verifications }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="card-header" style="border-bottom: none;">
+            <h2 style="margin:0;">Quick actions</h2>
+            <span class="muted">Everything you need, one click away</span>
+        </div>
+
+        <div class="grid grid-2">
+            <a href="{{ url_for('main.manage_templates') }}" class="tile tile-grad-1">
+                <h3>📋 Manage templates</h3>
+                <p>Create and manage certificate templates</p>
+            </a>
+
+            <a href="{{ url_for('main.generate_certificates') }}" class="tile tile-grad-2">
+                <h3>🚀 Generate certificates</h3>
+                <p>Bulk-generate certificates from CSV</p>
+            </a>
+
+            <a href="{{ url_for('main.list_certificates') }}" class="tile tile-grad-3">
+                <h3>📚 View certificates</h3>
+                <p>Browse and download generated certificates</p>
+            </a>
+
+            <a href="{{ url_for('main.statistics') }}" class="tile tile-grad-4">
+                <h3>📊 Statistics</h3>
+                <p>Track metrics and verification activity</p>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

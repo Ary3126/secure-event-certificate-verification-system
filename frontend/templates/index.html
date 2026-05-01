@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Digital Certificates{% endblock %}
+
+{% block content %}
+<section class="hero text-center fade-in">
+    <h1 class="hero-title">Digital certificates, instantly verifiable.</h1>
+    <p class="hero-subtitle" style="margin-left:auto; margin-right:auto;">
+        Generate, manage, and verify certificates using unique IDs + QR codes — with a clean admin workflow and a public verification page.
+    </p>
+
+    <div class="actions">
+        {% if not session.user_id %}
+            <a class="btn btn-primary" href="{{ url_for('auth.register') }}">Get started</a>
+            <a class="btn btn-success" href="{{ url_for('verify.verify_page') }}">Verify a certificate</a>
+        {% else %}
+            <a class="btn btn-primary" href="{{ url_for('main.dashboard') }}">Go to dashboard</a>
+        {% endif %}
+    </div>
+
+    <div class="feature-grid mt-4">
+        <div class="card feature-card">
+            <h3>📄 Bulk generation</h3>
+            <p>Upload CSV, pick a template, and generate certificates in one go.</p>
+        </div>
+        <div class="card feature-card">
+            <h3>🔎 Fast verification</h3>
+            <p>Search by certificate ID or scan QR to confirm authenticity.</p>
+        </div>
+        <div class="card feature-card">
+            <h3>🧩 Custom templates</h3>
+            <p>Upload your background design and configure fields per template.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

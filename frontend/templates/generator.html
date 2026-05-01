@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Generate Certificates - Digital Certificates{% endblock %}
+
+{% block content %}
+<div class="stack-lg fade-in">
+    <div class="card">
+        <div class="card-header">
+            <h1 style="margin:0;">🚀 Generate certificates</h1>
+            <span class="badge badge-info">CSV</span>
+        </div>
+        <p class="muted mb-0">Upload a CSV, choose a template, and generate certificates in bulk.</p>
+    </div>
+
+    <div class="panel">
+        <div class="card-header" style="border-bottom:none;">
+            <h3 style="margin:0;">Upload CSV file</h3>
+            <span class="muted">Required: <strong>name</strong>, <strong>course</strong>, <strong>email</strong></span>
+        </div>
+
+        <div class="alert alert-info" style="margin-top:0;">
+            <div style="width:100%;">
+                <h4 style="margin:0 0 0.5rem;">CSV format</h4>
+                <p class="muted" style="margin:0 0 0.75rem;">Your CSV should contain the following columns:</p>
+                <pre class="code-block">name,course,email,date (optional)
+John Doe,Python Basics,john@example.com,2024-02-21
+Jane Smith,Web Development,jane@example.com,2024-02-21</pre>
+            </div>
+        </div>
+
+        <form class="form" method="POST" action="{{ url_for('main.generate_certificates') }}" enctype="multipart/form-data">
+            <div class="field">
+                <label class="label" for="template_id">Select template *</label>
+                <select id="template_id" name="template_id" required>
+                    <option value="" selected disabled>-- Choose a template --</option>
+                    {% for template in templates %}
+                        <option value="{{ template.id }}">{{ template.template_name }}</option>
+                    {% endfor %}
+                </select>
+                {% if not templates %}
+                    <p class="muted" style="margin:0;">
+                        <span class="badge badge-danger">No templates</span>
+                        <a href="{{ url_for('main.manage_templates') }}">Create one first</a>
+                    </p>
+                {% endif %}
+            </div>
+
+            <div class="field">
+                <label class="label" for="csv_file">CSV file *</label>
+                <input type="file" id="csv_file" name="csv_file" accept=".csv" required>
+            </div>
+
+            <button type="submit" class="btn btn-success">Generate certificates</button>
+        </form>
+    </div>
+
+    <div class="alert alert-warning">
+        <div style="width:100%;">
+            <h4 style="margin:0 0 0.5rem;">ℹ️ Important notes</h4>
+            <ul style="margin:0; padding-left: 1.2rem; color: rgba(255,255,255,0.78);">
+                <li>Each certificate gets a unique ID and QR code</li>
+                <li>Certificates are generated as PDF files</li>
+                <li>You can download them from the certificates list</li>
+                <li>Verifications are tracked automatically</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

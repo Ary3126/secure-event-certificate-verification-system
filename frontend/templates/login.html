@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Digital Certificates{% endblock %}
+
+{% block content %}
+<div class="fade-in" style="max-width: 460px; margin: 0 auto;">
+    <div class="panel">
+        <div class="card-header" style="border-bottom: none; margin-bottom: 0.25rem;">
+            <h2 style="margin:0;">Login</h2>
+            <span class="badge badge-info">Choose role</span>
+        </div>
+
+        <div class="grid" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
+            <a class="btn btn-primary" href="{{ url_for('auth.login_role', role='admin') }}">Admin</a>
+            <a class="btn btn-ghost" href="{{ url_for('auth.login_role', role='student') }}">Student</a>
+        </div>
+
+        <p class="text-center mt-3 mb-0">
+            Don’t have an account? <a href="{{ url_for('auth.register') }}">Register</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

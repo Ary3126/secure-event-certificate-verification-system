@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Certificates List - Digital Certificates{% endblock %}
+
+{% block content %}
+<div class="stack-lg fade-in">
+    <div class="card">
+        <div class="card-header">
+            <h1 style="margin:0;">📚 Certificates</h1>
+            <span class="muted">Page {{ certificates.page }}{% if certificates.pages %} / {{ certificates.pages }}{% endif %}</span>
+        </div>
+        <p class="muted mb-0">Download generated certificates and track verification counts.</p>
+    </div>
+
+    {% if certificates.items %}
+        <div class="panel">
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Certificate ID</th>
+                            <th>Recipient</th>
+                            <th>Course</th>
+                            <th>Date</th>
+                            <th>Verifications</th>
+                            <th class="text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cert in certificates.items %}
+                            <tr>
+                                <td><span class="badge badge-info">{{ cert.certificate_uid[:8] }}…</span></td>
+                                <td>{{ cert.recipient_name }}</td>
+                                <td>{{ cert.course_name }}</td>
+                                <td>{{ cert.issue_date.strftime('%Y-%m-%d') }}</td>
+                                <td><span class="badge badge-success">{{ cert.verification_count }}</span></td>
+                                <td class="text-right">
+                                    <a class="btn btn-ghost" href="{{ url_for('main.download_certificate', cert_id=cert.id) }}">⬇️ Download</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if certificates.pages > 1 %}
+                <div class="actions" style="justify-content: space-between; margin-top: 1rem;">
+                    <div>
+                        {% if certificates.has_prev %}
+                            <a class="btn btn-ghost" href="{{ url_for('main.list_certificates', page=certificates.prev_num) }}">← Previous</a>
+                        {% endif %}
+                    </div>
+
+                    <div class="muted" style="align-self:center;">
+                        {% for page_num in certificates.iter_pages() %}
+                            {% if page_num %}
+                                {% if page_num == certificates.page %}
+                                    <span class="badge badge-info">{{ page_num }}</span>
+                                {% else %}
+                                    <a href="{{ url_for('main.list_certificates', page=page_num) }}" style="border-bottom:none; margin: 0 0.25rem;">{{ page_num }}</a>
+                                {% endif %}
+                            {% else %}
+                                <span class="muted" style="margin: 0 0.25rem;">…</span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+
+                    <div>
+                        {% if certificates.has_next %}
+                            <a class="btn btn-ghost" href="{{ url_for('main.list_certificates', page=certificates.next_num) }}">Next →</a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="panel text-center">
+            <div class="alert alert-info" style="margin:0;">
+                <div style="width:100%;">
+                    <h3 style="margin:0 0 0.5rem;">No certificates yet</h3>
+                    {% if session.role == 'admin' %}
+                        <p class="muted" style="margin:0 0 0.75rem;">Generate your first certificates from CSV.</p>
+                        <a class="btn btn-primary" href="{{ url_for('main.generate_certificates') }}">Generate certificates</a>
+                    {% else %}
+                        <p class="muted" style="margin:0;">You do not have any certificates yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

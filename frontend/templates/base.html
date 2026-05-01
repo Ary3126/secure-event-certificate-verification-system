@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Digital Certificate System{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extrahead %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="{{ url_for('main.index') }}" class="navbar-brand">
+                <span class="navbar-brand-badge">S</span>
+                SGP Certificates
+            </a>
+            <ul class="nav-links">
+                {% if session.user_id %}
+                    {% if session.role == 'admin' %}
+                        <li><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                        <li><a href="{{ url_for('main.manage_templates') }}">Templates</a></li>
+                        <li><a href="{{ url_for('main.generate_certificates') }}">Generate</a></li>
+                        <li><a href="{{ url_for('main.list_certificates') }}">Certificates</a></li>
+                        <li><a href="{{ url_for('main.statistics') }}">Statistics</a></li>
+                    {% else %}
+                        <li><a href="{{ url_for('main.student_dashboard') }}">My Certificates</a></li>
+                    {% endif %}
+                    <li><a href="{{ url_for('auth.profile') }}">Profile</a></li>
+                    <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('auth.login') }}">Login</a></li>
+                    <li><a href="{{ url_for('auth.register') }}">Register</a></li>
+                    <li><a href="{{ url_for('verify.verify_page') }}">Verify</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Messages -->
+    <div class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} fade-in">
+                        <div>{{ message }}</div>
+                        <button class="alert-close" type="button" onclick="this.parentElement.style.display='none';" aria-label="Close">×</button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    <main class="page">
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 SGP Digital Certificate System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    {% block extrascript %}{% endblock %}
+</body>
+</html>

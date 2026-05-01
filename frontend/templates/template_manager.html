@@ -1,0 +1,423 @@
+{% extends "base.html" %}
+
+{% block title %}Template Manager - Digital Certificates{% endblock %}
+
+{% block content %}
+<style>
+/* Editor specific styles */
+.editor-container {
+    display: flex;
+    gap: 20px;
+    margin-top: 15px;
+    background: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+.editor-sidebar {
+    width: 250px;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    flex-shrink: 0;
+}
+.editor-sidebar h4, .editor-sidebar label {
+    color: #333 !important;
+}
+.editor-sidebar input, .editor-sidebar textarea {
+    background: #fff !important;
+    color: #000 !important;
+    border: 1px solid #ccc !important;
+    padding: 6px;
+    border-radius: 4px;
+    width: 100%;
+    box-sizing: border-box;
+}
+.editor-canvas-container {
+    flex-grow: 1;
+    overflow: auto;
+    border: 1px solid #ddd;
+    background: #e9ecef url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAOklEQVQYV2NkYGAwYcR/4D6G4a6srKwM2A2BCUIVwgSxCkEUogthugk2G6cbmMkwA+GGw2wgWAsxDAAdBCE/G6PikwAAAABJRU5ErkJggg==');
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+canvas#templateCanvas {
+    cursor: crosshair;
+    background: white;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+.tool-btn {
+    display: block;
+    width: 100%;
+    margin-bottom: 8px;
+    padding: 8px;
+    text-align: left;
+    background: #fff;
+    border: 1px solid #dcdcdc;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.tool-btn:hover {
+    background: #f0f0f0;
+}
+</style>
+
+<div class="stack-lg fade-in">
+    <div class="card">
+        <div class="card-header">
+            <h1 style="margin:0;">📋 Certificate templates</h1>
+            <span class="badge badge-info">Admin</span>
+        </div>
+        <p class="muted mb-0">Upload a background image and visually design your certificate using the drag-and-drop editor.</p>
+    </div>
+
+    <div class="panel">
+        <div class="card-header" style="border-bottom:none;">
+            <h3 style="margin:0;">Upload & Design Template</h3>
+            <span class="badge badge-info">PNG/JPG</span>
+        </div>
+
+        <form class="form" id="templateForm" method="POST" action="{{ url_for('main.upload_template') }}" enctype="multipart/form-data">
+            
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <div class="field" style="flex:1; min-width: 250px;">
+                    <label class="label" for="template_name">Template name</label>
+                    <input type="text" id="template_name" name="template_name" required placeholder="e.g. Workshop Completion">
+                </div>
+                <div class="field" style="flex:1; min-width: 250px;">
+                    <label class="label" for="template_file">Background image (PNG/JPG)</label>
+                    <input type="file" id="template_file" name="template_file" accept=".png,.jpg,.jpeg" required>
+                    <p class="muted" style="margin:0;">Recommended size: <strong>1200×800</strong></p>
+                </div>
+            </div>
+
+            <!-- The visual editor UI -->
+            <div class="editor-container" id="editorContainer" style="display:none;">
+                <div class="editor-sidebar">
+                    <h4 style="margin-top:0;">Add Elements</h4>
+                    <button type="button" class="tool-btn" onclick="addTextField('{{recipient_name}}', 'Recipient Name')">+ Recipient Name</button>
+                    <button type="button" class="tool-btn" onclick="addTextField('{{course_name}}', 'Course Name')">+ Course Name</button>
+                    <button type="button" class="tool-btn" onclick="addTextField('{{issue_date}}', 'Issue Date')">+ Issue Date</button>
+                    <button type="button" class="tool-btn" onclick="addTextField('{{certificate_uid}}', 'Certificate UID')">+ Certificate ID</button>
+                    <button type="button" class="tool-btn" onclick="addTextField('Custom Text', 'Custom Text')">+ Static Text</button>
+                    <button type="button" class="tool-btn" onclick="document.getElementById('logo_upload').click()">+ Logo Image</button>
+                    <input type="file" id="logo_upload" style="display:none;" accept=".png,.jpg,.jpeg" onchange="addLogoImage(event)">
+                    
+                    <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
+                    
+                    <div id="propertiesPanel" style="display:none;">
+                        <h4 style="margin-top:0;">Properties</h4>
+                        <div class="field">
+                            <label class="label" style="font-size:12px;">Text Value</label>
+                            <textarea id="propText" rows="2" style="width:100%;" oninput="updateSelectedProp('value', this.value)"></textarea>
+                        </div>
+                        <div class="field">
+                            <label id="propSizeLabel" class="label" style="font-size:12px;">Font Size</label>
+                            <input type="number" id="propSize" min="10" max="300" oninput="updateSelectedProp('font_size', parseInt(this.value))">
+                        </div>
+                        <div class="field" id="colorFieldGroup">
+                            <label class="label" style="font-size:12px;">Color</label>
+                            <input type="color" id="propColor" oninput="updateSelectedProp('color', this.value)">
+                        </div>
+                        <button type="button" class="btn btn-danger btn-block" style="padding: 6px; font-size:13px; margin-top:10px;" onclick="deleteSelected()">Delete Element</button>
+                    </div>
+                    <p id="noSelectionMsg" class="muted" style="font-size:13px;">Select an element on the canvas to edit its properties.</p>
+                </div>
+                
+                <div class="editor-canvas-container">
+                    <canvas id="templateCanvas" width="1200" height="800"></canvas>
+                </div>
+            </div>
+
+            <!-- Hidden field mapping the drawing layout to the backend -->
+            <div class="field" style="display:none;">
+                <label class="label" for="field_config">Field configuration (JSON)</label>
+                <textarea id="field_config" name="field_config" rows="6" readonly>{"fields": []}</textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="margin-top: 20px;">Upload & Save Template</button>
+        </form>
+    </div>
+
+    <div class="panel">
+        <div class="card-header" style="border-bottom:none;">
+            <h3 style="margin:0;">Your templates</h3>
+            <span class="muted">{{ templates|length }} total</span>
+        </div>
+
+        {% if templates %}
+            <div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));">
+                {% for template in templates %}
+                    <div class="card" style="padding:0; overflow:hidden;">
+                        <!-- Using url_for if background path is served statically, but currently backgrounds seem to be local file paths? -->
+                        <!-- In the original code, this just matched {{ template.background_path }} -->
+                        <img src="{{ url_for('main.serve_certificate', filename=template.background_path.split('/')[-1].split('\\')[-1]) if template.background_path else '' }}" alt="{{ template.template_name }}" style="width: 100%; height: 180px; object-fit: cover; background: #eee;">
+                        <div style="padding: 1rem;">
+                            <h4 style="margin:0 0 0.35rem;">{{ template.template_name }}</h4>
+                            <p class="muted" style="margin:0 0 0.9rem;">Created: {{ template.created_at.strftime('%Y-%m-%d') }}</p>
+                            <form method="POST" action="{{ url_for('main.delete_template', template_id=template.id) }}">
+                                <button type="submit" class="btn btn-danger btn-block" onclick="return confirm('Are you sure you want to delete this template?')">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info" style="margin: 0;">
+                <div>No templates yet. Create your first template above.</div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Canvas logic
+const canvas = document.getElementById('templateCanvas');
+const ctx = canvas.getContext('2d');
+let bgImage = null;
+let elements = [];
+let selectedElementIndex = -1;
+let isDragging = false;
+let dragOffsetX = 0;
+let dragOffsetY = 0;
+
+// Dimensions for the virtual certificate matching reportlab / PIL defaults (1200x800)
+const VIRTUAL_W = 1200;
+const VIRTUAL_H = 800;
+
+document.getElementById('template_file').addEventListener('change', function(e) {
+    if(e.target.files && e.target.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            bgImage = new Image();
+            bgImage.onload = function() {
+                document.getElementById('editorContainer').style.display = 'flex';
+                renderCanvas();
+            }
+            bgImage.src = evt.target.result;
+        }
+        reader.readAsDataURL(e.target.files[0]);
+    }
+});
+
+function renderCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if(bgImage) {
+        ctx.drawImage(bgImage, 0, 0, VIRTUAL_W, VIRTUAL_H);
+    } else {
+        ctx.fillStyle = "#f0f8ff";
+        ctx.fillRect(0, 0, VIRTUAL_W, VIRTUAL_H);
+    }
+
+    elements.forEach((el, index) => {
+        if(el.type === 'text') {
+            ctx.font = `${el.font_size}px Arial`;
+            ctx.fillStyle = el.color;
+            ctx.textBaseline = 'top';
+            ctx.fillText(el.value, el.x, el.y);
+            
+            // Measure text for bounding box
+            const metrics = ctx.measureText(el.value || ' ');
+            el.width = Math.max(metrics.width, 20); // ensure it's selectable even if empty
+            el.height = el.font_size;
+        } else if(el.type === 'image') {
+            if(el.imgObj) {
+                ctx.drawImage(el.imgObj, el.x, el.y, el.width, el.height);
+            }
+        }
+        
+        // Draw selection box
+        if(index === selectedElementIndex) {
+            ctx.strokeStyle = '#007bff';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.strokeRect(el.x - 4, el.y - 4, el.width + 8, el.height + 8);
+            ctx.setLineDash([]);
+        }
+    });
+    
+    updateConfig();
+}
+
+function addTextField(value, name) {
+    elements.push({
+        type: 'text',
+        name: name,
+        value: value,
+        x: VIRTUAL_W / 2 - 100,
+        y: Math.min(100 + elements.length * 60, VIRTUAL_H - 100),
+        font_size: 40,
+        color: '#000000',
+        width: 100, // will be updated in render
+        height: 40
+    });
+    selectedElementIndex = elements.length - 1;
+    updatePropertiesPanel();
+    renderCanvas();
+}
+
+function addLogoImage(e) {
+    if(e.target.files && e.target.files[0]) {
+        const file = e.target.files[0];
+        if (file.size > 500 * 1024) { // 500kb limit for logos in JSON
+            alert("Please use a smaller logo image (under 500KB) to keep the template configuration lightweight.");
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            const img = new Image();
+            img.onload = function() {
+                // scale down if too large
+                let w = img.width;
+                let h = img.height;
+                if(w > 200) {
+                    h = Math.round(h * (200 / w));
+                    w = 200;
+                }
+                elements.push({
+                    type: 'image',
+                    name: 'Logo',
+                    value: evt.target.result, // base64 string
+                    imgObj: img,
+                    x: VIRTUAL_W - w - 50,
+                    y: 50,
+                    width: w,
+                    height: h
+                });
+                selectedElementIndex = elements.length - 1;
+                updatePropertiesPanel();
+                renderCanvas();
+            }
+            img.src = evt.target.result;
+        }
+        reader.readAsDataURL(file);
+    }
+}
+
+// Map client coordinates to intrinsic canvas coordinates
+function getMousePos(evt) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    return {
+        x: (evt.clientX - rect.left) * scaleX,
+        y: (evt.clientY - rect.top) * scaleY
+    };
+}
+
+canvas.addEventListener('mousedown', function(e) {
+    const pos = getMousePos(e);
+    selectedElementIndex = -1;
+    // Walk backwards for top-most selection mapping
+    for(let i = elements.length - 1; i >= 0; i--) {
+        const el = elements[i];
+        if(pos.x >= el.x && pos.x <= el.x + el.width &&
+           pos.y >= el.y && pos.y <= el.y + el.height) {
+            selectedElementIndex = i;
+            isDragging = true;
+            dragOffsetX = pos.x - el.x;
+            dragOffsetY = pos.y - el.y;
+            break;
+        }
+    }
+    updatePropertiesPanel();
+    renderCanvas();
+});
+
+canvas.addEventListener('mousemove', function(e) {
+    if(isDragging && selectedElementIndex !== -1) {
+        const pos = getMousePos(e);
+        const el = elements[selectedElementIndex];
+        el.x = pos.x - dragOffsetX;
+        el.y = pos.y - dragOffsetY;
+        renderCanvas();
+    }
+});
+
+window.addEventListener('mouseup', function() {
+    isDragging = false;
+});
+
+function updatePropertiesPanel() {
+    const panel = document.getElementById('propertiesPanel');
+    const msg = document.getElementById('noSelectionMsg');
+    
+    if(selectedElementIndex !== -1) {
+        panel.style.display = 'block';
+        msg.style.display = 'none';
+        
+        const el = elements[selectedElementIndex];
+        document.getElementById('propText').value = el.value || '';
+        document.getElementById('propText').disabled = (el.type === 'image');
+        
+        if(el.type === 'image') {
+           document.getElementById('propSize').value = Math.round(el.width);
+           document.getElementById('propSizeLabel').innerText = 'Image Width';
+           document.getElementById('colorFieldGroup').style.display = 'none';
+        } else {
+           document.getElementById('propSize').value = el.font_size;
+           document.getElementById('propSizeLabel').innerText = 'Font Size';
+           document.getElementById('colorFieldGroup').style.display = 'block';
+        }
+        
+        document.getElementById('propColor').value = el.color || '#000000';
+    } else {
+        panel.style.display = 'none';
+        msg.style.display = 'block';
+    }
+}
+
+function updateSelectedProp(prop, val) {
+    if(selectedElementIndex !== -1) {
+        const el = elements[selectedElementIndex];
+        if(prop === 'font_size' && el.type === 'image') {
+            // handle image width scaling
+            const ratio = el.height / el.width;
+            el.width = val;
+            el.height = Math.round(val * ratio);
+        } else {
+            el[prop] = val;
+        }
+        renderCanvas();
+    }
+}
+
+function deleteSelected() {
+    if(selectedElementIndex !== -1) {
+        elements.splice(selectedElementIndex, 1);
+        selectedElementIndex = -1;
+        updatePropertiesPanel();
+        renderCanvas();
+    }
+}
+
+function updateConfig() {
+    const jsonStr = JSON.stringify({ fields: elements.map(el => {
+        // Exclude imgObj so it serializes properly into generic JSON
+        const { imgObj, ...rest } = el;
+        return rest;
+    })});
+    document.getElementById('field_config').value = jsonStr;
+}
+
+// Initial draw if restoring State 
+// (Useful if implementing edit/update of existing templates later)
+setTimeout(() => {
+    try {
+        const existingData = JSON.parse(document.getElementById('field_config').value);
+        if(existingData && existingData.fields && existingData.fields.length > 0) {
+           // Would restore objects here
+        }
+    } catch(e) {}
+}, 500);
+
+</script>
+{% endblock %}
